@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WASM Data Receiver</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        pre { background: #f0f0f0; padding: 1em; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>WASM Data Receiver</h1>
+    <div id="output">Waiting for data...</div>
+
+    <script type="module">
+        // 1. Read ?data= from URL
+        const params = new URLSearchParams(window.location.search);
+        const encodedData = params.get("data");
+
+        if (encodedData) {
+            try {
+                // 2. Decode URL-encoded string
+                const decoded = decodeURIComponent(encodedData);
+
+                // 3. Display decoded data
+                document.getElementById("output").innerHTML =
+                    `<h2>Received Data:</h2><pre>${decoded}</pre>`;
+            } catch (err) {
+                document.getElementById("output").textContent = "Error decoding data: " + err;
+            }
+        } else {
+            document.getElementById("output").textContent = "No data received.";
+        }
+    </script>
+</body>
+</html>
