@@ -1,36 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>WASM Data Receiver</title>
-    <style>
-        body { font-family: sans-serif; margin: 2em; }
-        pre { background: #f0f0f0; padding: 1em; border-radius: 5px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WASM Data Receiver</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      margin: 1rem;
+      background: #f5f7fa;
+      color: #333;
+    }
+    pre {
+      background: #222;
+      color: #eee;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+    h1 {
+      color: #007aff;
+      font-weight: 600;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+    }
+    .no-data {
+      font-style: italic;
+      color: #888;
+      margin-top: 2rem;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
     <h1>WASM Data Receiver</h1>
-    <div id="output">Waiting for data...</div>
+    <div id="output"></div>
+  </div>
 
-    <script type="module">
-        // 1. Read ?data= from URL
-        const params = new URLSearchParams(window.location.search);
-        const encodedData = params.get("data");
+  <script>
+    // Helper: parse URL parameter by name
+    function getQueryParam(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
 
-        if (encodedData) {
-            try {
-                // 2. Decode URL-encoded string
-                const decoded = decodeURIComponent(encodedData);
-
-                // 3. Display decoded data
-                document.getElementById("output").innerHTML =
-                    `<h2>Received Data:</h2><pre>${decoded}</pre>`;
-            } catch (err) {
-                document.getElementById("output").textContent = "Error decoding data: " + err;
+    // Pretty-print JSON with indentation and syntax highlighting
+    function syntaxHighlight(json) {
+      if (typeof json != "string") {
+        json = JSON.stringify(json, undefined, 2);
+      }
+      json = json
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+      return json.replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        function (match) {
+          let cls = "number";
+          if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+              cls = "key";
+            } else {
+              cls = "string";
             }
-        } else {
-            document.getElementById("output").textContent = "No data received.";
+          } else if (/true|false/.test(match)) {
+            cls = "boolean";
+          } else if (/null/.test(match)) {
+            cls = "null";
+          }
+          return `<span class="${cls}">${match}</span>`;
         }
-    </script>
+      );
+    }
+
+    // Main execution
+    const outputEl = document.getElementById("output");
+    const dataParam = getQueryParam("data");
+
+    if (dataParam) {
+      try {
+        const decoded = decodeURIComponent(dataParam);
+        const jsonData = JSON.parse(decoded);
+        outputEl.innerHTML =
+          "<pre>" + syntaxHighlight(jsonData) + "</pre>";
+      } catch (e) {
+        outputEl.innerHTML =
+          `<p style="color:red;">Error parsing JSON data: ${e.message}</p>`;
+      }
+    } else {
+      outputEl.innerHTML =
+        '<p class="no-data">No data received yet. Send JSON via the "data" query parameter.</p>';
+    }
+  </script>
+
+  <style>
+    /* Syntax highlight colors */
+    .string { color: #d14; }
+    .number { color: #099; }
+    .boolean { color: #905; }
+    .null { color: #999; }
+    .key { color: #00f; }
+  </style>
 </body>
 </html>
