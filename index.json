@@ -4,3 +4,8 @@
   "items": [1, 2, 3, 4, 5]
 }
 { "message": "Hello from auto-deploy test" }
+{ "message": "Hello from test 2" }
+```)  
+and commit that.  
+
+Do you want me to give you the exact steps to edit and commit this in GitHub’s web interface?
